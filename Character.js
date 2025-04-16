@@ -260,6 +260,10 @@ export class Character {
     const spriteList = this.sprites[this.direction] || this.sprites.idle;
     const currentSprite = spriteList[this.spriteFrame % spriteList.length];
     const [x, y] = this.screenPosition();
-    ctx.drawImage(currentSprite, x - 35, y - 36, 75, 75);
+    if (this.direction === 'win') {
+      ctx.drawImage(currentSprite, x - 40, y - 170, 100, 200);
+    }
+    else {
+    ctx.drawImage(currentSprite, x - 35, y - 36, 75, 75);}
   }
 }

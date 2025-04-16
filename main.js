@@ -33,10 +33,10 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => {
   keysHeld.delete(e.key.toLowerCase());
   if (!state.app.win) {
-    state.app.charStatus = "idle";
+    state.app.charStatus = "win";
   }
   else {
-    state.app.charStatus = "win";
+    state.app.charStatus = "idle";
   }
 });
 

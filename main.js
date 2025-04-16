@@ -102,6 +102,7 @@ function drawGameScreen() {
     drawGameScene(state.app);
     state.app.char.draw(ctx);
     drawWinMap(state.app, ctx);
+    drawBackButton(state.app, ctx);
   } else {
   drawGameScene(state.app);
   state.app.char.draw(ctx);

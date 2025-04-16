@@ -114,7 +114,7 @@ export function drawLabel(text, x, y, options = {}) {
   export function drawWinMap(app, ctx) {
     drawLabel('You Made It!', 600, 350, {
       fill: app.color.sWordsC,
-      size: 130,
+      size: 100,
       align: 'center',
       font: 'Kefa',
       bold: true

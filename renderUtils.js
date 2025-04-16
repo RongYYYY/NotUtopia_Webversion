@@ -1,5 +1,6 @@
 // renderUtils.js
 import { getBlockLFD } from './geometryUtils.js';
+import { Maze } from './Maze.js';
 
 const ctx = document.getElementById("gameCanvas").getContext("2d");
 
@@ -112,15 +113,26 @@ export function drawLabel(text, x, y, options = {}) {
   }
 
   export function drawWinMap(app, ctx) {
-    drawLabel('You Made It!', 600, 350, {
+    drawLabel('You Made It!', 300, 350, {
       fill: app.color.sWordsC,
-      size: 100,
+      size: 120,
       align: 'center',
       font: 'Kefa',
       bold: true
     }, ctx);
   }
   
+  function getMapFog(app) {
+    const x = app.char.xBlock;
+    const y = app.char.yBlock;
+    const L = [];
+    for (const [a, b, c] of Maze.deepsort(app.map.theL)) {
+      if (Math.abs(a - x) <= 1 && Math.abs(b - y) <= 1) {
+        L.push([a, b, c]);
+      }
+    }
+    return L;
+  }
   
   
 function drawBlock(app, x, y, z, size) {
@@ -221,6 +233,57 @@ function drawLadder(app, x, y, z, size, direction) {
       }
     }
   }  
+
+  function drawFogModeInstructions(app, ctx) {
+    const theme = app.color;
+  
+    drawLabel("Goal:", 610, 50, {
+      fill: theme.sLineC,
+      size: 25,
+      align: 'left',
+      bold: true,
+      opacity: 0.9,
+      font: 'Kefa'
+    });
+  
+    drawLabel("It is a foggy day today,", 630, 85, {
+      fill: theme.sLineC,
+      size: 22,
+      align: 'left',
+      bold: true,
+      opacity: 0.8,
+      font: 'Kefa'
+    });
+  
+    drawLabel("ut you still need to go to class", 657, 115, {
+      fill: theme.sLineC,
+      size: 22,
+      align: 'left',
+      bold: true,
+      opacity: 0.8,
+      font: 'Kefa'
+    });
+  
+    drawLabel("Go from TOP LEFT Corner", 684, 140, {
+      fill: theme.sLineC,
+      size: 22,
+      align: 'left',
+      bold: true,
+      opacity: 1.0,
+      font: 'Kefa'
+    });
+  
+    drawLabel("to DOWN RIGHT Corner", 711, 175, {
+      fill: theme.sLineC,
+      size: 22,
+      align: 'left',
+      bold: true,
+      opacity: 1.0,
+      font: 'Kefa'
+    });
+  
+    drawInstructionBlock(app, 900, 350, 45);
+  }
 
 
   function drawSunnyModeInstructions(app, ctx) {
@@ -519,4 +582,4 @@ function drawLadder(app, x, y, z, size, direction) {
 // function drawBackground(app, ctx) {
 // }
 
-export { drawBlock, drawStarterBlockTop, drawLadder, getBlockLFD, drawSunnyModeInstructions, drawMiniMap, drawKeyInstruction};
+export { drawBlock, drawStarterBlockTop, drawLadder, getBlockLFD, drawSunnyModeInstructions, drawMiniMap, drawKeyInstruction, drawFogModeInstructions, getMapFog};

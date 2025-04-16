@@ -264,6 +264,6 @@ export class Character {
       ctx.drawImage(currentSprite, x - 40, y - 170, 100, 200);
     }
     else {
-    ctx.drawImage(currentSprite, x - 35, y - 36, 75, 75);}
+    ctx.drawImage(currentSprite, x - 35, y - 36, 60, 75);}
   }
 }

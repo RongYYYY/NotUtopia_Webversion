@@ -11,7 +11,9 @@ import {
   drawMiniMap,
   drawKeyInstruction, 
   drawBackButton,
-  drawWinMap
+  drawWinMap, 
+  getMapFog,
+  drawFogModeInstructions
 } from './renderUtils.js';
 
 const canvas = document.getElementById("gameCanvas");
@@ -66,6 +68,7 @@ function drawStartScreen() {
   ctx.font = "48px Kefa";
   ctx.textAlign = "center";
   ctx.fillText("not UTOPIA", canvas.width / 2, 100);
+  ctx.fillText("foggy not working no", canvas.width / 2, 150);
 
   drawButton(160, 260, 200, 60, "Schenley", state.colorTheme === 1);
   drawButton(400, 260, 200, 60, "Allegheny", state.colorTheme === 2);
@@ -105,10 +108,10 @@ function drawGameScreen() {
     drawBackButton(state.app, ctx);
   } else {
   drawGameScene(state.app);
-  state.app.char.draw(ctx);
-  //console.log(state.app.char.xBlock, state.app.char.yBlock, state.app.char.zBlock, state.app.char.x, state.app.char.y);
-  state.app.char.drawMoreL(state.app.map.theL);
-  drawSunnyModeInstructions(state.app);
+  // state.app.char.draw(ctx);
+  // //console.log(state.app.char.xBlock, state.app.char.yBlock, state.app.char.zBlock, state.app.char.x, state.app.char.y);
+  // state.app.char.drawMoreL(state.app.map.theL);
+  // drawSunnyModeInstructions(state.app);
   drawMiniMap(state.app, ctx);
   drawKeyInstruction(state.app, ctx);
   drawBackButton(state.app, ctx);
@@ -182,18 +185,67 @@ function getCoins(app) {
 }
 
 function drawGameScene(app) {
+  app = state.app;
   ctx.fillStyle = app.color.sBackgroundC;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  const sortedL = Maze.deepsort(app.map.theL);
-  for (const [a, b, c] of sortedL) {
-    drawBlock(app, a, b, c, app.blockSize);
-    if ((a === app.dimension - 1 && b === 0) || (a === 0 && b === app.dimension - 1)) {
-      drawStarterBlockTop(app, a, b, c, app.blockSize);
-    }
-    if (app.ladderW.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'L');
-    if (app.ladderS.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'R');
+  if (app.mode === 'foggy') {
+    const L = getMapFog(app);
+    for (const [a, b, c] of L) {
+      drawBlock(app, a, b, c, app.blockSize);
+      if ((a === app.dimension - 1 && b === 0) || (a === 0 && b === app.dimension - 1)) {
+        drawStarterBlockTop(app, a, b, c, app.blockSize);
+      }
+      if (app.ladderW.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'L');
+      if (app.ladderS.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'R');
   }
+    app.char.draw(ctx);
+    app.char.drawMoreL(getMapFog(app));
+    drawFogModeInstructions(app);}
+  else {
+    console.log("sunmode2");
+    const sortedL = Maze.deepsort(app.map.theL);
+    for (const [a, b, c] of sortedL) {
+      drawBlock(app, a, b, c, app.blockSize);
+      if ((a === app.dimension - 1 && b === 0) || (a === 0 && b === app.dimension - 1)) {
+        drawStarterBlockTop(app, a, b, c, app.blockSize);
+      }
+      if (app.ladderW.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'L');
+      if (app.ladderS.has(`${a},${b},${c}`)) drawLadder(app, a, b, c, app.blockSize, 'R');
+  }
+  app.char.draw(ctx);
+  app.char.drawMoreL(app.map.theL);
+  drawSunnyModeInstructions(app);
 }
+}
+
+function mazeMoveN(app) {
+  app.char.direction = 'S';
+  [app.mazeLFDX, app.mazeLFDY] = getBlockLFD(app, 0, 1/10, 0);
+  app.char.yBoard -= 3.9375;
+  app.char.updateValues();
+}
+
+function mazeMoveS(app) {
+  app.char.direction = 'N';
+  [app.mazeLFDX, app.mazeLFDY] = getBlockLFD(app, 0, -4/30, 0);
+  app.char.yBoard += 3.9375;
+  app.char.updateValues();
+}
+
+function mazeMoveE(app) {
+  app.char.direction = 'W';
+  [app.mazeLFDX, app.mazeLFDY] = getBlockLFD(app, 1/10, -1/30, 0);
+  app.char.xBoard -= 3.5;
+  app.char.updateValues();
+}
+
+function mazeMoveW(app) {
+  app.char.direction = 'E';
+  [app.mazeLFDX, app.mazeLFDY] = getBlockLFD(app, - 1/10, 0, 0);
+  app.char.xBoard += 3.5;
+  app.char.updateValues();
+}
+
 
 // JS version of sunnyHorizontalMove
 function sunnyHorizontalMove(app, keys, L) {
@@ -223,6 +275,38 @@ function sunnyHorizontalMove(app, keys, L) {
       }
     }
   }
+
+  function foggyHorizontalMove(app, keys, L) {
+    const [x, y, z] = [app.char.xBlock, app.char.yBlock, app.char.zBlock];
+    console.log(x, y, z);
+  
+    if (keys.has('arrowup')) {
+      mazeMoveS(app);
+      if (!L.some(([a, b, c]) => a === x && b === y && c === z)) {
+        mazeMoveN(app);
+        app.charStatus = null;
+      }
+    } else if (keys.has('arrowdown')) {
+      mazeMoveN(app);
+      if (!L.some(([a, b, c]) => a === x && b === y && c === z)) {
+        mazeMoveS(app);
+        app.charStatus = null;
+      }
+    } else if (keys.has('arrowright')) {
+      mazeMoveW(app);
+      if (!L.some(([a, b, c]) => a === x && b === y && c === z)) {
+        mazeMoveE(app);
+        app.charStatus = null;
+      }
+    } else if (keys.has('arrowleft')) {
+      mazeMoveE(app);
+      if (!L.some(([a, b, c]) => a === x && b === y && c === z)) {
+        mazeMoveW(app);
+        app.charStatus = null;
+      }
+    }
+  }
+  
   
   // JS version of verticalMove
   function verticalMove(app, keys) {
@@ -279,8 +363,15 @@ function sunnyHorizontalMove(app, keys, L) {
         // app.sunSound.play();
         app.gotCoins.push([app.char.xBlock, app.char.yBlock]);
       }
-      checkWin(app);
     }
+    if (!app.win && !app.sunnyMode) {
+      const L = app.char.movable();
+      verticalMove(app, keys);
+      if (app.char.zBlock % 1 === 0) {
+        foggyHorizontalMove(app, keys, L);
+      }
+    }
+    checkWin(app);
   }
 
   function checkWin(app) {
@@ -300,6 +391,10 @@ function sunnyHorizontalMove(app, keys, L) {
         //   app.winSound.play();
         // }
       }
+    }
+    if (inGoalX && inGoalY && app.mode === "foggy") {
+      app.win = true;
+      app.charStatus = "win";
     }
   }
   

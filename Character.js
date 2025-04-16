@@ -40,7 +40,7 @@ export class Character {
     const images = [];
     for (let i = 1; i <= count; i++) {
       const img = new Image();
-      img.src = `./assets/sprites/${prefix}${i}.png`;
+      img.src = `./assets/sprites/${prefix}${i}.PNG`;
       images.push(img);
     }
     return images;
